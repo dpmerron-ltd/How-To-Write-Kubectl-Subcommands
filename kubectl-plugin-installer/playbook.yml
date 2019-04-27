@@ -1,0 +1,19 @@
+---
+- name: Kubectl Custom plugin installer Ansible Playbook.
+  hosts: localhost
+  tasks:
+
+    - name: Check kubectl version ia greater than v1.12.0
+      shell: "if [[ $(kubectl version --short | grep Client | sed 's/^.*: //') < 'v1.12.0' ]]; then return 1; fi"
+
+    - name: Find plugins in kubectl-plugins folder
+      find: paths="kubectl-plugins" recurse=no patterns="kubectl-*"
+      register: plugins
+
+    - name: Copy all plugins from kubectl-plugins to $PATH
+      copy:
+        src: "{{item.path}}"
+        dest: /usr/local/bin/
+        mode: preserve
+      with_items: 
+        - "{{plugins.files}}"
